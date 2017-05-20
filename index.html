@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Neighborhood Explorer</title>
+    <!-- Latest compiled and minified Bootsrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+
+    <!-- jquery -->
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>  
+
+    <!-- Latest compiled and minified Bootstrap JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 explore-menu">
+                <h3>Explore your neighborhood!</h3>
+                <form data-bind="submit:getSearchResults">
+
+                  <div class="form-group row">
+                   <div class="col-md-12">
+                    <label for="zoom-area">Zoom region</label>
+                    <input class="form-control" id="zoom-to-area-text" type="text" placeholder="Enter address or zip.">
+                   </div>
+                  </div>
+                <hr>
+                  <h4>Search what you want!</h4>
+                  
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Enter search text."
+                    data-bind="value:searchString, valueUpdate: "afterkeydown"">
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-default">Search</button>
+                    </span>
+                  </div>
+                  <small class="form-text text-muted">e.g. Restaurants, optometry, plumbing etc.</small>                  
+                </form>
+                <hr>
+                <h4 data-bind="if: yelpBusinesses().length>0">Results for <span data-bind="text: searchString"></span></h4>
+                <div class="list-group" data-bind="foreach: yelpBusinesses">
+                    <div class="list-group-item" 
+                        data-bind="click: $parent.updateInfoWindow, attr: { id: id }">
+                        <h5 data-bind="text: name"></h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div id="map">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/knockout-3.4.2.js"></script>
+    <script src="js/app.js"></script>
+    <script async defer
+        src=
+        "https://maps.googleapis.com/maps/api/js?libraries=places,geometry,drawing&key=AIzaSyACmhe9AvBlcRRjKjsGwx65rBv_VR2hr0o&v=3&callback=initMap">
+    </script>
+
+</body>
+</html>
