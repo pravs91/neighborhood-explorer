@@ -127,6 +127,7 @@ function getYelpBusinesses(access_token, location, searchString){
         map_center = new google.maps.LatLng(region.center.latitude, region.center.longitude);
         // populate the businesses from response
         response.businesses.forEach(function(business){
+            business["miles"] = (business.distance /(1000 * 1.6)).toFixed(1);
             appViewModel.yelpBusinesses.push(business);
         })
         createMarkers(appViewModel.yelpBusinesses);

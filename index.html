@@ -56,13 +56,19 @@
                 <div class="list-group" data-bind="foreach: yelpBusinesses">
                     <div class="list-group-item" 
                         data-bind="click: $parent.updateInfoWindow, attr: { id: id }">
-                        <h5 data-bind="text: name"></h5>
+                        <h5 data-bind="text: name, style: { color: '#cc0000' }"></h5>
+                        Rating: <span data-bind="text: rating"></span>
+                        <span class="pull-right">
+                            <span data-bind="text: miles"></span> mi
+                        </span>
                     </div>
                 </div>
             </div>
             <div class="col-md-9">
-                <div id="map">
+                <div data-spy="affix" data-offset-top="200" id="map-affix">
+                    <div id="map">
 
+                    </div>
                 </div>
             </div>
         </div>
