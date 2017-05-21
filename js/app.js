@@ -271,6 +271,44 @@ var ViewModel = function(){
             }
         })
     }
+
+    self.sortByDistance = function(){
+        self.yelpBusinesses.sort(function(business1, business2){
+            if(business1.distance < business2.distance){
+                return -1;
+            } else if(business1.distance > business2.distance){
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+    }
+
+    self.sortByRating = function(){
+        // sort by rating descending
+        self.yelpBusinesses.sort(function(business1, business2){
+            if(business1.rating < business2.rating){
+                return 1;
+            } else if(business1.rating > business2.rating){
+                return -1;
+            } else {
+                return 0;
+            }
+        });
+    }
+
+    self.sortByReviewCount = function(){
+        // sort by review count descending
+        self.yelpBusinesses.sort(function(business1, business2){
+            if(business1.review_count < business2.review_count){
+                return 1;
+            } else if(business1.review_count > business2.review_count){
+                return -1;
+            } else {
+                return 0;
+            }
+        });        
+    }
 }
 
 var appViewModel = new ViewModel();
