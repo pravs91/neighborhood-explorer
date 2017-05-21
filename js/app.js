@@ -127,7 +127,13 @@ function getYelpBusinesses(access_token, location, searchString){
         map_center = new google.maps.LatLng(region.center.latitude, region.center.longitude);
         // populate the businesses from response
         response.businesses.forEach(function(business){
+            // store distance in miles
             business["miles"] = (business.distance /(1000 * 1.6)).toFixed(1);
+            business["showInfo"] = ko.observable(false);
+            // add price as null if not found
+            if(business.price === undefined){
+                business.price = null;
+            }
             appViewModel.yelpBusinesses.push(business);
         })
         createMarkers(appViewModel.yelpBusinesses);
@@ -159,7 +165,7 @@ function createMarkers(businesses){
         markers.push(marker);
         marker.addListener('click',(function(marker){
             return function(){
-                console.log(marker.title + " clicked!");
+                // console.log(marker.title + " clicked!");
                 // marker.setAnimation(google.maps.Animation.BOUNCE);
                 populateInfoWindow(marker, globalInfoWindow);
             }            
@@ -199,7 +205,8 @@ function populateInfoWindow(marker, infoWindow){
         // get more info through yelp Business API
         getBusinessInfo(marker.id)
         .done(function(response){
-            console.log(response);
+            // console.log(response);
+            // TODO render infoWindow 
             infoWindow.setContent('<div>' + response.name + '</div>');
         }).fail(function(error){
             alert("An error occured in getting Yelp business API result! Please try again.")
@@ -245,9 +252,19 @@ var ViewModel = function(){
         }
     }
 
+    self.collapseAll = function(){
+        self.yelpBusinesses().forEach(function(business){
+            business.showInfo(false);
+        })        
+    }
+
     self.updateInfoWindow = function(){
-        this.active = 1; // css class
+        // console.log(this);
+        // collapse all info on left pane
+        self.collapseAll();
         var curr_id = this.id;
+        // expand info for this business
+        this.showInfo(true);
         markers.forEach(function(marker){
             if(marker.id == curr_id){
                 populateInfoWindow(marker, globalInfoWindow);

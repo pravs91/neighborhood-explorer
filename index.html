@@ -58,16 +58,35 @@
                         data-bind="click: $parent.updateInfoWindow, attr: { id: id }">
                         <h5 data-bind="text: name, style: { color: '#cc0000' }"></h5>
                         Rating: <span data-bind="text: rating"></span>
+                        <small class="form-text text-muted">
+                            (<span data-bind="text: review_count"></span> reviews)
+                        </small>
                         <span class="pull-right">
                             <span data-bind="text: miles"></span> mi
                         </span>
+                        <div class="business-info" data-bind="visible: showInfo">                            
+                            <small>
+                                <b>Address: </b> <br>
+                                <span data-bind="foreach: location.display_address">
+                                    <span data-bind="text: $data"></span><br>
+                                </span>
+                                <b>Phone: </b><span data-bind="text: display_phone"></span><br>
+                                <b>Category: </b>
+                                <span data-bind="foreach: categories">
+                                    <span data-bind="text: title"></span>;
+                                </span><br>
+                                <span data-bind="if: price !== null">
+                                    <b>Price: </b>
+                                    <span data-bind="text: price"></span>
+                                </span>
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-9">
                 <div data-spy="affix" data-offset-top="200" id="map-affix">
                     <div id="map">
-
                     </div>
                 </div>
             </div>
@@ -79,6 +98,5 @@
         src=
         "https://maps.googleapis.com/maps/api/js?libraries=places,geometry,drawing&key=AIzaSyACmhe9AvBlcRRjKjsGwx65rBv_VR2hr0o&v=3&callback=initMap">
     </script>
-
 </body>
 </html>
