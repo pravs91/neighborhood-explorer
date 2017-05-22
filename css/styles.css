@@ -21,12 +21,12 @@
   
   #map-affix.affix {
     position: fixed;
-    top:10px;
+    top:0px;
     width:847px;
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 979px) {
     #map-affix.affix {
         position: static;
     }

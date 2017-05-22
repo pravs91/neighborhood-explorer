@@ -58,11 +58,25 @@
                 <div data-bind="if: yelpBusinesses().length>0">
                   <h4>Results for <span data-bind="text: searchString"></span></h4>
                   <h5>Sort by: </h5>
-                  <button data-bind="click: sortByDistance" class="btn btn-default">Distance</button>
-                  <button data-bind="click: sortByRating" class="btn btn-default">Rating</button>
-                  <button data-bind="click: sortByReviewCount" class="btn btn-default">Popularity</button>
+                  <!-- Options to sort results -->
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="optradio" value="distance" data-bind="click: sortByDistance">Distance
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="optradio" value="rating" data-bind="click: sortByRating">Rating
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="optradio" value="popularity" data-bind="click: sortByReviewCount">Popularity
+                    </label>
+                  </div>                  
                 </div>
                 <br>
+
                 <!-- Iterate through Knockout observable array -->
                 <div class="list-group" data-bind="foreach: yelpBusinesses">
                     <div class="list-group-item" 
@@ -97,7 +111,7 @@
                 </div>
             </div>
             <div class="col-md-9">
-                <div data-spy="affix" data-offset-top="200" id="map-affix">
+                <div data-spy="affix" data-offset-top="100" id="map-affix">
                     <div id="map">
                     </div>
                 </div>

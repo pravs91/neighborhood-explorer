@@ -18,7 +18,7 @@ function initMap(){
     });
 
     google.maps.event.addDomListener(window, 'resize', resize);
-    map_bounds = new google.maps.LatLngBounds();
+    // map_bounds = new google.maps.LatLngBounds();
 
     globalInfoWindow = new google.maps.InfoWindow();
 
@@ -44,6 +44,7 @@ function initMap(){
 // function to resize map to fit all markers
 function resize(){
     // console.log("resize");
+    map_bounds = new google.maps.LatLngBounds();
     map.setCenter(map_center);
     for (var i = 0; i < markers.length; i++) {
       // markers[i].setMap(map);
@@ -205,7 +206,7 @@ function populateInfoWindow(marker, infoWindow){
         // get more info through yelp Business API
         getBusinessInfo(marker.id)
         .done(function(response){
-            // console.log(response);
+            console.log(response);
             // TODO render infoWindow 
             infoWindow.setContent('<div>' + response.name + '</div>');
         }).fail(function(error){
@@ -233,6 +234,7 @@ var ViewModel = function(){
     var self = this;
     self.searchString = ko.observable("");
     self.yelpBusinesses = ko.observableArray([]);
+    self.sortOption = ko.observable("");
 
     self.getSearchResults = function(){
         if(yelp_access_token === undefined){
@@ -273,6 +275,7 @@ var ViewModel = function(){
     }
 
     self.sortByDistance = function(){
+        self.sortOption("distance");
         self.yelpBusinesses.sort(function(business1, business2){
             if(business1.distance < business2.distance){
                 return -1;
@@ -282,9 +285,11 @@ var ViewModel = function(){
                 return 0;
             }
         });
+        return true; // for radio button click highlight
     }
 
     self.sortByRating = function(){
+        self.sortOption("rating");
         // sort by rating descending
         self.yelpBusinesses.sort(function(business1, business2){
             if(business1.rating < business2.rating){
@@ -295,9 +300,11 @@ var ViewModel = function(){
                 return 0;
             }
         });
+        return true; // for radio button click highlight
     }
 
     self.sortByReviewCount = function(){
+        self.sortOption("popularity")
         // sort by review count descending
         self.yelpBusinesses.sort(function(business1, business2){
             if(business1.review_count < business2.review_count){
@@ -308,6 +315,7 @@ var ViewModel = function(){
                 return 0;
             }
         });        
+        return true; // for radio button click highlight
     }
 }
 
