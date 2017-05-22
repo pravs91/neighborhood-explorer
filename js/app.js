@@ -235,6 +235,7 @@ var ViewModel = function(){
     self.searchString = ko.observable("");
     self.yelpBusinesses = ko.observableArray([]);
     self.sortOption = ko.observable("");
+    self.filterText = ko.observable("");
 
     self.getSearchResults = function(){
         if(yelp_access_token === undefined){
@@ -273,6 +274,30 @@ var ViewModel = function(){
             }
         })
     }
+
+    self.filteredBusinesses = ko.computed(function(){
+        var filter = self.filterText().toLowerCase();
+        if(!filter){
+            // show all markers if filter is empty
+            markers.forEach(function(marker){
+                marker.setMap(map);
+            })
+            return self.yelpBusinesses();
+        } else {
+            // show only the markers that contain filter text
+            markers.forEach(function(marker){
+                if(marker.title.toLowerCase().indexOf(filter) === -1){
+                    marker.setMap(null);
+                } else{
+                    marker.setMap(map);
+                }
+            })
+            // filter the businesses array
+            return ko.utils.arrayFilter(self.yelpBusinesses(), function(business){
+                return business.name.toLowerCase().indexOf(filter) >= 0;
+            })
+        }
+    }, this)
 
     self.sortByDistance = function(){
         self.sortOption("distance");

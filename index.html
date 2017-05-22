@@ -57,6 +57,7 @@
                 <!-- Display search results -->
                 <div data-bind="if: yelpBusinesses().length>0">
                   <h4>Results for <span data-bind="text: searchString"></span></h4>
+                  <input type="search" placeholder="Search by name." class="form-control" data-bind="textInput: filterText">
                   <h5>Sort by: </h5>
                   <!-- Options to sort results -->
                   <div class="radio">
@@ -78,7 +79,7 @@
                 <br>
 
                 <!-- Iterate through Knockout observable array -->
-                <div class="list-group" data-bind="foreach: yelpBusinesses">
+                <div class="list-group" data-bind="foreach: filteredBusinesses">
                     <div class="list-group-item" 
                         data-bind="click: $parent.updateInfoWindow, attr: { id: id }">
                         <h5 data-bind="text: name, style: { color: '#cc0000' }"></h5>
