@@ -196,6 +196,7 @@ function getBusinessInfo(id){
 
 function populateInfoWindow(marker, infoWindow){
     if(infoWindow.marker != marker){
+        marker.setIcon(highlightedIcon);
         infoWindow.marker = marker;
         infoWindow.open(map, marker);        
         infoWindow.setContent('Getting Yelp info for ' + marker.title + '...');
@@ -203,12 +204,50 @@ function populateInfoWindow(marker, infoWindow){
         infoWindow.addListener('closeclick', function() {
             infoWindow.marker = null;
         });
+
+        // expand the corresponding list item on left pane when marker is clicked
+        appViewModel.collapseAll();
+        appViewModel.yelpBusinesses().forEach(function(business){
+            if(business.id == marker.id){
+                business.showInfo(true);
+            }
+        });
+
         // get more info through yelp Business API
         getBusinessInfo(marker.id)
         .done(function(response){
             console.log(response);
-            // TODO render infoWindow 
-            infoWindow.setContent('<div>' + response.name + '</div>');
+            // populate stuff to render on infoWindow
+
+            var address = "";
+            response.location.display_address.forEach(function(part){
+                address += part + '<br>';
+            })
+            var categories = "";
+            for(var i=0; i < response.categories.length; i++){
+                categories += response.categories[i].title;
+                if(i < response.categories.length - 1){
+                    categories += ", ";
+                }
+            }
+            var photos = "";
+            response.photos.forEach(function(url){
+                photos += '<img width="100" height="100" style="margin-right: 5px;" src="' + url + '" alt="yelp image">' 
+            })
+            var open_now = (response.hours !== undefined) ? response.hours[0].is_open_now ? "Yes" : "No" : "N/A";
+            var infoHtml = 
+                '<div>' +
+                  '<h4 style="color: #cc0000">' + response.name + '</h4>' + 
+                  '<p> <b> Rating: </b>' + response.rating + ' (' + response.review_count + ' reviews) </p>' +
+                  '<p> <b> Address: <br></b>' + address + ' </p>' +
+                  '<p> <b> Phone: </b>' + response.display_phone + '</p>' +
+                  '<p> <b> Open Now: </b>' + open_now + '</p>' +
+                  '<p> <b> Category: </b>' + categories + '</p>' +
+                  '<p> <b> Recent photos: </b><br>' + photos + '<br><br>' +
+                  '<a href="' + response.url + '"> Yelp Page</a>'
+                '</div>'
+            infoWindow.setContent(infoHtml);
+
         }).fail(function(error){
             alert("An error occured in getting Yelp business API result! Please try again.")
         });
@@ -258,6 +297,9 @@ var ViewModel = function(){
     self.collapseAll = function(){
         self.yelpBusinesses().forEach(function(business){
             business.showInfo(false);
+        })
+        markers.forEach(function(marker){
+            marker.setIcon(defaultIcon);
         })        
     }
 
