@@ -247,7 +247,7 @@ function populateInfoWindow(marker, infoWindow){
                   '<a href="' + response.url + '"> Yelp Page</a>'
                 '</div>'
             infoWindow.setContent(infoHtml);
-
+            infoWindow.open(map, marker); // to make infowindow fit again in map bounds
         }).fail(function(error){
             alert("An error occured in getting Yelp business API result! Please try again.")
         });
