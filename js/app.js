@@ -196,7 +196,7 @@ function getBusinessInfo(id){
 
 function populateInfoWindow(marker, infoWindow){
     if(infoWindow.marker != marker){
-        marker.setIcon(highlightedIcon);
+        marker.setIcon(highlightedIcon);        
         infoWindow.marker = marker;
         infoWindow.open(map, marker);        
         infoWindow.setContent('Getting Yelp info for ' + marker.title + '...');
@@ -217,6 +217,8 @@ function populateInfoWindow(marker, infoWindow){
         getBusinessInfo(marker.id)
         .done(function(response){
             console.log(response);
+            marker.setIcon(highlightedIcon);
+
             // populate stuff to render on infoWindow
 
             var address = "";
@@ -244,7 +246,8 @@ function populateInfoWindow(marker, infoWindow){
                   '<p> <b> Open Now: </b>' + open_now + '</p>' +
                   '<p> <b> Category: </b>' + categories + '</p>' +
                   '<p> <b> Recent photos: </b><br>' + photos + '<br><br>' +
-                  '<a href="' + response.url + '"> Yelp Page</a>'
+                  '<a href="' + response.url + '"> Yelp Page</a><br>' +
+                  '<small class="text-muted"> Data provided by Yelp Fusion API</small>'
                 '</div>'
             infoWindow.setContent(infoHtml);
             infoWindow.open(map, marker); // to make infowindow fit again in map bounds

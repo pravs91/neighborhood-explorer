@@ -83,13 +83,16 @@
                     <div class="list-group-item" 
                         data-bind="click: $parent.updateInfoWindow, attr: { id: id }">
                         <h5 data-bind="text: name, style: { color: '#cc0000' }"></h5>
-                        Rating: <span data-bind="text: rating"></span>
-                        <small class="form-text text-muted">
-                            (<span data-bind="text: review_count"></span> reviews)
-                        </small>
-                        <span class="pull-right">
-                            <span data-bind="text: miles"></span> mi
-                        </span>
+                        <div>
+                            Rating: <span data-bind="text: rating"></span>
+                            <small class="form-text text-muted">
+                                (<span data-bind="text: review_count"></span> reviews)
+                            </small>
+                            <span class="pull-right">
+                                <span data-bind="text: miles"></span> mi
+                            </span>
+                        </div>
+                        <br>
                         <!-- show business info on clicking an item -->
                         <div class="business-info" data-bind="visible: showInfo">                            
                             <small>
@@ -112,7 +115,7 @@
                 </div>
             </div>
             <div class="col-md-9">
-                <div data-spy="affix" data-offset-top="100" id="map-affix">
+                <div data-spy="affix" data-offset-top="100" id="map-affix" data-clampedwidth=".col-md-9">
                     <div id="map">
                     </div>
                 </div>
@@ -124,6 +127,27 @@
     <script async defer
         src=
         "https://maps.googleapis.com/maps/api/js?libraries=places,geometry,drawing&key=AIzaSyACmhe9AvBlcRRjKjsGwx65rBv_VR2hr0o&v=3&callback=initMap">
+    </script>
+    <script type="text/javascript">
+        /*
+        * Clamped-width. 
+        * Usage:
+        *  <div data-clampedwidth=".myParent">This long content will force clamped width</div>
+        *
+        * Fix for a bootstrap bug in affix
+        * https://stackoverflow.com/questions/12536354/bootstrap-affix-plugin-with-fluid-layout
+        */
+        $('[data-clampedwidth]').each(function () {
+            var elem = $(this);
+            var parentPanel = elem.data('clampedwidth');
+            var resizeFn = function () {
+                var sideBarNavWidth = $(parentPanel).width() - parseInt(elem.css('paddingLeft')) - parseInt(elem.css('paddingRight')) - parseInt(elem.css('marginLeft')) - parseInt(elem.css('marginRight')) - parseInt(elem.css('borderLeftWidth')) - parseInt(elem.css('borderRightWidth'));
+                elem.css('width', sideBarNavWidth);
+            };
+
+            resizeFn();
+            $(window).resize(resizeFn);
+        });
     </script>
 </body>
 </html>

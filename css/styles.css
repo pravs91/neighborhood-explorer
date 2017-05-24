@@ -11,7 +11,7 @@
     text-align: left;   
 }
 
-@media (min-width: 979px) {
+@media screen and (min-width: 979px) {
   #map-affix.affix-top {
     position: static;
     margin-top:0px;
@@ -21,12 +21,12 @@
   
   #map-affix.affix {
     position: fixed;
-    top:0px;
+    top:0px !important;
     width:847px;
   }
 }
 
-@media (max-width: 979px) {
+@media screen and (max-width: 992px) {
     #map-affix.affix {
         position: static;
     }
