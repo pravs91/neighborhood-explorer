@@ -24,12 +24,15 @@
 
     <!-- Latest compiled and minified Bootstrap JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!-- font awesome for yelp icon -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
         
 </head>
 <body>
     <div class="container">
         <div class="row">
-            <div class="col-md-3 explore-menu">
+            <div class="col-md-3"  id="explore-menu">
                 <h3>Explore your neighborhood!</h3>
                 <form data-bind="submit:getSearchResults">
                     <!-- Zoom area textbox -->
@@ -40,7 +43,7 @@
                    </div>
                   </div>
                   <hr>
-                  <h4>Search what you want!</h4>
+                  <h4>What are you looking for?</h4>
                   
                   <!-- Search query text box -->
                   <div class="input-group">
@@ -54,66 +57,81 @@
                 </form>
                 <hr>
 
-                <!-- Display search results -->
-                <div data-bind="if: yelpBusinesses().length>0">
-                  <h4>Results for <span data-bind="text: searchString"></span></h4>
-                  <input type="search" placeholder="Search by name." class="form-control" data-bind="textInput: filterText">
-                  <h5>Sort by: </h5>
-                  <!-- Options to sort results -->
-                  <div class="radio">
-                    <label>
-                      <input type="radio" name="optradio" value="distance" data-bind="click: sortByDistance">Distance
-                    </label>
-                  </div>
-                  <div class="radio">
-                    <label>
-                      <input type="radio" name="optradio" value="rating" data-bind="click: sortByRating">Rating
-                    </label>
-                  </div>
-                  <div class="radio">
-                    <label>
-                      <input type="radio" name="optradio" value="popularity" data-bind="click: sortByReviewCount">Popularity
-                    </label>
-                  </div>                  
-                </div>
-                <br>
-
-                <!-- Iterate through Knockout observable array -->
-                <div class="list-group" data-bind="foreach: filteredBusinesses">
-                    <div class="list-group-item" 
-                        data-bind="click: $parent.updateInfoWindow, attr: { id: id }">
-                        <h5 data-bind="text: name, style: { color: '#cc0000' }"></h5>
-                        <div>
-                            Rating: <span data-bind="text: rating"></span>
-                            <small class="form-text text-muted">
-                                (<span data-bind="text: review_count"></span> reviews)
-                            </small>
-                            <span class="pull-right">
-                                <span data-bind="text: miles"></span> mi
-                            </span>
-                        </div>
-                        <br>
-                        <!-- show business info on clicking an item -->
-                        <div class="business-info" data-bind="visible: showInfo">                            
-                            <small>
-                                <b>Address: </b> <br>
-                                <span data-bind="foreach: location.display_address">
-                                    <span data-bind="text: $data"></span><br>
-                                </span>
-                                <b>Phone: </b><span data-bind="text: display_phone"></span><br>
-                                <b>Category: </b>
-                                <span data-bind="foreach: categories">
-                                    <span data-bind="text: title"></span>;
-                                </span><br>
-                                <span data-bind="if: price !== null">
-                                    <b>Price: </b>
-                                    <span data-bind="text: price"></span>
-                                </span>
-                            </small>
-                        </div>
+                <div class="panel-group" data-bind="if: yelpBusinesses().length>0">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#resultsPane">
+                            Results for <span data-bind="text: searchString">
+                        </a>
+                      </h4>
                     </div>
-                </div>
-            </div>
+                    <div id="resultsPane" class="panel-collapse collapse in">
+                      <div class="panel-body">
+                          <input type="search" placeholder="Search by name." class="form-control" data-bind="textInput: filterText">
+                          <h5>Sort by: </h5>
+                          <!-- Options to sort results -->
+                          <div class="radio">
+                            <label>
+                              <input type="radio" name="optradio" value="distance" data-bind="click: sortByDistance">Distance
+                            </label>
+                          </div>
+                          <div class="radio">
+                            <label>
+                              <input type="radio" name="optradio" value="rating" data-bind="click: sortByRating">Rating
+                            </label>
+                          </div>
+                          <div class="radio">
+                            <label>
+                              <input type="radio" name="optradio" value="popularity" data-bind="click: sortByReviewCount">Popularity
+                            </label>
+                          </div> 
+                          <div class="panel-group" id="accordion" data-bind="foreach: filteredBusinesses">
+                              <div class="panel panel-default" data-bind="click: $parent.updateInfoWindow, attr: { id: id }">
+                                <div class="panel-heading">
+                                    <h5 class="panel-title">
+                                      <a data-toggle="collapse" data-parent="#accordion"
+                                       data-bind="text: name, style: { color: '#cc0000' }, attr: {href: collapseHref}"></a>
+                                    </h5>
+                                    <!-- <br> -->
+                                    <p>
+                                      <span data-bind="text: rating "></span><i class="fa fa-yelp" aria-hidden="true"></i>
+                                      <small class="form-text text-muted">
+                                        (<span data-bind="text: review_count"></span> reviews)
+                                      </small>
+                                      <span class="pull-right">
+                                        <span data-bind="text: miles"></span> mi
+                                      </span>
+                                    </p>
+                                </div>
+                                <div data-bind="attr: {id: collapseId} " class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                    <small>
+                                        <b>Address: </b> <br>
+                                        <span data-bind="foreach: location.display_address">
+                                            <span data-bind="text: $data"></span><br>
+                                        </span>
+                                        <b>Phone: </b><span data-bind="text: display_phone"></span><br>
+                                        <b>Category: </b>
+                                        <span data-bind="foreach: categories">
+                                            <span data-bind="text: title"></span>;
+                                        </span><br>
+                                        <span data-bind="if: price !== null">
+                                            <b>Price: </b>
+                                            <span data-bind="text: price"></span>
+                                        </span>
+                                    </small>                                
+                                    </div>
+                                </div>
+                              </div> <!-- panel for one business -->
+                          </div> <!-- panel group for businesses list -->
+
+                      </div> <!-- panel body -->
+                    </div> <!-- id="resultsPane" -->
+                  </div><!-- results pane panel -->
+                </div><!-- results pane panel-group -->
+            </div><!-- col-md-3 -->
+
             <div class="col-md-9">
                 <div data-spy="affix" data-offset-top="100" id="map-affix" data-clampedwidth=".col-md-9">
                     <div id="map">
@@ -148,6 +166,7 @@
             resizeFn();
             $(window).resize(resizeFn);
         });
+       
     </script>
 </body>
 </html>

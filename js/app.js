@@ -127,10 +127,12 @@ function getYelpBusinesses(access_token, location, searchString){
         var region = response.region;
         map_center = new google.maps.LatLng(region.center.latitude, region.center.longitude);
         // populate the businesses from response
-        response.businesses.forEach(function(business){
+        response.businesses.forEach(function(business, index){
             // store distance in miles
             business["miles"] = (business.distance /(1000 * 1.6)).toFixed(1);
-            business["showInfo"] = ko.observable(false);
+            // some CSS id stuff to expand/collapse business
+            business["collapseId"] = 'collapse' + (index+1);
+            business["collapseHref"] = '#collapse' + (index+1);
             // add price as null if not found
             if(business.price === undefined){
                 business.price = null;
@@ -205,19 +207,11 @@ function populateInfoWindow(marker, infoWindow){
             infoWindow.marker = null;
         });
 
-        // expand the corresponding list item on left pane when marker is clicked
-        appViewModel.collapseAll();
-        appViewModel.yelpBusinesses().forEach(function(business){
-            if(business.id == marker.id){
-                business.showInfo(true);
-            }
-        });
-
         // get more info through yelp Business API
         getBusinessInfo(marker.id)
         .done(function(response){
-            console.log(response);
-            marker.setIcon(highlightedIcon);
+            // console.log(response);
+            // marker.setIcon(highlightedIcon);
 
             // populate stuff to render on infoWindow
 
@@ -297,22 +291,16 @@ var ViewModel = function(){
         }
     }
 
-    self.collapseAll = function(){
-        self.yelpBusinesses().forEach(function(business){
-            business.showInfo(false);
-        })
+    self.uncolorAll = function(){
         markers.forEach(function(marker){
             marker.setIcon(defaultIcon);
         })        
     }
 
     self.updateInfoWindow = function(){
-        // console.log(this);
-        // collapse all info on left pane
-        self.collapseAll();
+        // set all markers to default color
+        self.uncolorAll();
         var curr_id = this.id;
-        // expand info for this business
-        this.showInfo(true);
         markers.forEach(function(marker){
             if(marker.id == curr_id){
                 populateInfoWindow(marker, globalInfoWindow);
