@@ -166,7 +166,24 @@
             resizeFn();
             $(window).resize(resizeFn);
         });
-       
+
+        // function to collapse the results pane on smaller screens
+        (function($) {
+            var $window = $(window);
+
+            function resize() {
+                // console.log("resizing");
+                if ($window.width() < 992) {
+                    return $('#resultsPane').collapse('hide');
+                } else {
+                    return $('#resultsPane').collapse('show');
+                }
+            }
+
+            $window
+                .resize(resize)
+                .trigger('resize');
+        })(jQuery);        
     </script>
 </body>
 </html>
