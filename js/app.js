@@ -39,6 +39,11 @@ function initMap(){
     // Create a "highlighted location" marker color for when the user
     // mouses over the marker.
     highlightedIcon = makeMarkerIcon('FFFF24');
+
+    // show default results for Brookly, New York when the map is loaded
+    query_location = "Brooklyn, NY, USA";
+    geocodeAndZoom(query_location);
+    appViewModel.getSearchResults();
 }
 
 // function to resize map to fit all markers
@@ -55,6 +60,27 @@ function resize(){
     }
 }
 
+function geocodeAndZoom(address){
+  // Initialize the geocoder.
+  var geocoder = new google.maps.Geocoder();
+
+  // Geocode the address/area entered to get the center. Then, center the map
+  // on it and zoom in
+  geocoder.geocode(
+    { address: address,
+      // componentRestrictions: {locality: 'New York'}
+    }, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        map_center = results[0].geometry.location;
+        map.setCenter(results[0].geometry.location);
+        map.setZoom(15);
+      } else {
+        window.alert('We could not find that location - try entering a more' +
+            ' specific place.');
+      }
+    });
+}
+
 // This function takes the input value in the find nearby area text input
 // locates it, and then zooms into that area. This is so that the user can
 // show all listings, then decide to focus on one area of the map.
@@ -62,31 +88,16 @@ function resize(){
 function zoomToArea(zoomAutocomplete) {
     
     query_location = zoomAutocomplete.getPlace().formatted_address;
+    console.log(query_location);
 
-    // Initialize the geocoder.
-    var geocoder = new google.maps.Geocoder();
     // Get the address or place that the user entered.
     var address = document.getElementById('zoom-to-area-text').value;
     // Make sure the address isn't blank.
     if (address == '') {
       window.alert('You must enter an area, or address.');
     } else {
-      // Geocode the address/area entered to get the center. Then, center the map
-      // on it and zoom in
-      geocoder.geocode(
-        { address: address,
-          // componentRestrictions: {locality: 'New York'}
-        }, function(results, status) {
-          if (status == google.maps.GeocoderStatus.OK) {
-            map_center = results[0].geometry.location;
-            map.setCenter(results[0].geometry.location);
-            map.setZoom(15);
-          } else {
-            window.alert('We could not find that location - try entering a more' +
-                ' specific place.');
-          }
-        });
-      }
+        geocodeAndZoom(address);
+    }
 }
 
 var yelp_access_token;
@@ -277,7 +288,7 @@ function makeMarkerIcon(markerColor) {
 // knockout ViewModel (MVVM paradigm)
 var ViewModel = function(){
     var self = this;
-    self.searchString = ko.observable("");
+    self.searchString = ko.observable("pizza");
     self.yelpBusinesses = ko.observableArray([]);
     self.sortOption = ko.observable(""); // parameter to sort by
     self.filterText = ko.observable(""); // filter text for search results
