@@ -2,8 +2,8 @@
 var map;
 var map_center;
 var map_bounds; //  use to fit all markers in map
-var query_location;
-var markers = [];
+var query_location; // zoomed area on map
+var markers = []; // global markers array to hold all markers
 var globalInfoWindow;
 
 var defaultIcon, highlightedIcon;
@@ -17,8 +17,8 @@ function initMap(){
       mapTypeControl: false
     });
 
+    // resize map when window size changes
     google.maps.event.addDomListener(window, 'resize', resize);
-    // map_bounds = new google.maps.LatLngBounds();
 
     globalInfoWindow = new google.maps.InfoWindow();
 
@@ -46,8 +46,8 @@ function resize(){
     // console.log("resize");
     map_bounds = new google.maps.LatLngBounds();
     map.setCenter(map_center);
+    // add all marker positions to bounds
     for (var i = 0; i < markers.length; i++) {
-      // markers[i].setMap(map);
       map_bounds.extend(markers[i].position);
     }
     if(markers.length > 0){
@@ -61,7 +61,6 @@ function resize(){
 // Based on Udacity's Google Maps API course
 function zoomToArea(zoomAutocomplete) {
     
-    // console.log(zoomAutocomplete.getPlace());
     query_location = zoomAutocomplete.getPlace().formatted_address;
 
     // Initialize the geocoder.
@@ -93,6 +92,7 @@ function zoomToArea(zoomAutocomplete) {
 var yelp_access_token;
 var CORS_ANYWHERE_URL = 'https://cors-anywhere.herokuapp.com/';
 
+// function to get access_token from Yelp Fusion API
 function getYelpAccessToken(){
     // HACK to use client side JS with Yelp V3
     // https://github.com/Rob--W/cors-anywhere
@@ -108,7 +108,9 @@ function getYelpAccessToken(){
     })   
 }
 
+// function to get results from Yelp based on search string
 function getYelpBusinesses(access_token, location, searchString){
+    // use CORS_ANYWHERE hack for Yelp V3
     var yelp_business_search_url = CORS_ANYWHERE_URL + "https://api.yelp.com/v3/businesses/search";
     $.ajax({
         url: yelp_business_search_url,
@@ -119,7 +121,7 @@ function getYelpBusinesses(access_token, location, searchString){
         data: {
             term: searchString,
             location: location,
-            radius: 8000 // 5 miles
+            radius: 8000 // search within 5 miles
         }
     }).done(function(response){
         // console.log(response);
@@ -137,14 +139,17 @@ function getYelpBusinesses(access_token, location, searchString){
             if(business.price === undefined){
                 business.price = null;
             }
+            // push business into ViewModel's observable array
             appViewModel.yelpBusinesses.push(business);
         })
         createMarkers(appViewModel.yelpBusinesses);
     }).fail(function(error){
+        // handle error on AJAX request
         alert("An error occured in getting Yelp results! Please try again.");
     })
 }
 
+// function to remove all markers from map
 function removeMarkers(){
     for(var i = 0; i < markers.length; i++){
         markers[i].setMap(null);
@@ -152,9 +157,11 @@ function removeMarkers(){
 }
 
 
+// function to create markers based on yelp results
 function createMarkers(businesses){
     removeMarkers();
     markers = [];
+    // iterate through observable array and create marker
     for(var i = 0; i < businesses().length; i++){
         var position = {lat: businesses()[i].coordinates.latitude, lng: businesses()[i].coordinates.longitude};
         var title = businesses()[i].name;
@@ -165,11 +172,11 @@ function createMarkers(businesses){
             icon: defaultIcon
         })
         marker.setMap(map);
+        // push marker into global markers array
         markers.push(marker);
+        // add listener for click to open infoWindow
         marker.addListener('click',(function(marker){
             return function(){
-                // console.log(marker.title + " clicked!");
-                // marker.setAnimation(google.maps.Animation.BOUNCE);
                 populateInfoWindow(marker, globalInfoWindow);
             }            
         })(marker))
@@ -185,6 +192,7 @@ function createMarkers(businesses){
     resize();
 }
 
+// function to get info about a single business when it's clicked on results pane
 function getBusinessInfo(id){
     var yelp_business_info_url = CORS_ANYWHERE_URL + "https://api.yelp.com/v3/businesses/" + id;
     return $.ajax({
@@ -196,6 +204,7 @@ function getBusinessInfo(id){
     })    
 }
 
+// function to populate infowindow DOM
 function populateInfoWindow(marker, infoWindow){
     if(infoWindow.marker != marker){
         marker.setIcon(highlightedIcon);        
@@ -211,10 +220,8 @@ function populateInfoWindow(marker, infoWindow){
         getBusinessInfo(marker.id)
         .done(function(response){
             // console.log(response);
-            // marker.setIcon(highlightedIcon);
 
             // populate stuff to render on infoWindow
-
             var address = "";
             response.location.display_address.forEach(function(part){
                 address += part + '<br>';
@@ -246,6 +253,7 @@ function populateInfoWindow(marker, infoWindow){
             infoWindow.setContent(infoHtml);
             infoWindow.open(map, marker); // to make infowindow fit again in map bounds
         }).fail(function(error){
+            // handle error on AJAX request
             alert("An error occured in getting Yelp business API result! Please try again.")
         });
     }
@@ -266,19 +274,21 @@ function makeMarkerIcon(markerColor) {
     return markerImage;
 }
 
+// knockout ViewModel (MVVM paradigm)
 var ViewModel = function(){
     var self = this;
     self.searchString = ko.observable("");
     self.yelpBusinesses = ko.observableArray([]);
-    self.sortOption = ko.observable("");
-    self.filterText = ko.observable("");
+    self.sortOption = ko.observable(""); // parameter to sort by
+    self.filterText = ko.observable(""); // filter text for search results
 
+    // function to get search results from yelp, bound to "submit" event on form
     self.getSearchResults = function(){
         if(yelp_access_token === undefined){
             getYelpAccessToken()
             .done(function(response){
                 yelp_access_token = response.access_token;
-                // clear the businesses
+                // clear the businesses if already exists
                 self.yelpBusinesses([]);
                 getYelpBusinesses(yelp_access_token, query_location, self.searchString(), self.yelpBusinesses);
             }).fail(function(error){
@@ -291,23 +301,28 @@ var ViewModel = function(){
         }
     }
 
+    // function to uncolor all markers
     self.uncolorAll = function(){
         markers.forEach(function(marker){
             marker.setIcon(defaultIcon);
         })        
     }
 
+    // function bound to click event on a business
     self.updateInfoWindow = function(){
         // set all markers to default color
         self.uncolorAll();
         var curr_id = this.id;
         markers.forEach(function(marker){
             if(marker.id == curr_id){
+                // open info window for this marker
                 populateInfoWindow(marker, globalInfoWindow);
             }
         })
     }
 
+    // filter the results pane if filterText exists
+    // use KO computed
     self.filteredBusinesses = ko.computed(function(){
         var filter = self.filterText().toLowerCase();
         if(!filter){
@@ -332,6 +347,7 @@ var ViewModel = function(){
         }
     }, this)
 
+    // sort business results by distance
     self.sortByDistance = function(){
         self.sortOption("distance");
         self.yelpBusinesses.sort(function(business1, business2){
@@ -346,6 +362,7 @@ var ViewModel = function(){
         return true; // for radio button click highlight
     }
 
+    // sort business results by rating
     self.sortByRating = function(){
         self.sortOption("rating");
         // sort by rating descending
@@ -361,6 +378,7 @@ var ViewModel = function(){
         return true; // for radio button click highlight
     }
 
+    // sort business results by popularity (review count)
     self.sortByReviewCount = function(){
         self.sortOption("popularity")
         // sort by review count descending
@@ -377,5 +395,6 @@ var ViewModel = function(){
     }
 }
 
+// create ViewModel and bind to KO
 var appViewModel = new ViewModel();
 ko.applyBindings(appViewModel);
