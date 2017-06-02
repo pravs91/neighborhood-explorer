@@ -347,16 +347,16 @@ var ViewModel = function(){
         if(!filter){
             // show all markers if filter is empty
             markers.forEach(function(marker){
-                marker.setVisible(true);
+                marker.setMap(map);
             });
             return self.yelpBusinesses();
         } else {
             // show only the markers that contain filter text
             markers.forEach(function(marker){
                 if(marker.title.toLowerCase().indexOf(filter) === -1){
-                    marker.setVisible(false);
+                    marker.setMap(null);
                 } else{
-                    marker.setVisible(true);
+                    marker.setMap(map);
                 }
             });
             // filter the businesses array
