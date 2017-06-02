@@ -1,8 +1,7 @@
-
 var map;
-var map_center;
-var map_bounds; //  use to fit all markers in map
-var query_location; // zoomed area on map
+var mapCenter;
+var mapBounds; //  use to fit all markers in map
+var queryLocation; // zoomed area on map
 var markers = []; // global markers array to hold all markers
 var globalInfoWindow;
 
@@ -10,9 +9,9 @@ var defaultIcon, highlightedIcon;
 
 function initMap(){
     // Constructor creates a new map - only center and zoom are required.
-    map_center = new google.maps.LatLng(40.7413549, -73.9980244);
+    mapCenter = new google.maps.LatLng(40.7413549, -73.9980244);
     map = new google.maps.Map(document.getElementById('map'), {
-      center: map_center,
+      center: mapCenter,
       zoom: 13,
       mapTypeControl: false
     });
@@ -29,6 +28,7 @@ function initMap(){
     zoomAutocomplete.bindTo('bounds', map);
 
     // add event listener to zoom in map
+    // fired when user selects an option from auto-complete results
     zoomAutocomplete.addListener('place_changed', function() {
       zoomToArea(this);
     });
@@ -41,23 +41,27 @@ function initMap(){
     highlightedIcon = makeMarkerIcon('FFFF24');
 
     // show default results for Brookly, New York when the map is loaded
-    query_location = "Brooklyn, NY, USA";
-    geocodeAndZoom(query_location);
+    queryLocation = "Brooklyn, NY, USA";
+    geocodeAndZoom(queryLocation);
     appViewModel.getSearchResults();
 }
 
 // function to resize map to fit all markers
 function resize(){
-    // console.log("resize");
-    map_bounds = new google.maps.LatLngBounds();
-    map.setCenter(map_center);
+    mapBounds = new google.maps.LatLngBounds();
+    map.setCenter(mapCenter);
     // add all marker positions to bounds
     for (var i = 0; i < markers.length; i++) {
-      map_bounds.extend(markers[i].position);
+      mapBounds.extend(markers[i].position);
     }
     if(markers.length > 0){
-        map.fitBounds(map_bounds);    
+        map.fitBounds(mapBounds);    
     }
+}
+
+// function to handle google maps error
+function mapError(){
+    window.alert("An error occured in loading Google Maps API");
 }
 
 function geocodeAndZoom(address){
@@ -71,7 +75,7 @@ function geocodeAndZoom(address){
       // componentRestrictions: {locality: 'New York'}
     }, function(results, status) {
       if (status == google.maps.GeocoderStatus.OK) {
-        map_center = results[0].geometry.location;
+        mapCenter = results[0].geometry.location;
         map.setCenter(results[0].geometry.location);
         map.setZoom(15);
       } else {
@@ -87,44 +91,47 @@ function geocodeAndZoom(address){
 // Based on Udacity's Google Maps API course
 function zoomToArea(zoomAutocomplete) {
     
-    query_location = zoomAutocomplete.getPlace().formatted_address;
-    console.log(query_location);
+    queryLocation = zoomAutocomplete.getPlace().formatted_address;
+    // console.log(queryLocation);
 
     // Get the address or place that the user entered.
-    var address = document.getElementById('zoom-to-area-text').value;
+    // since this function will only be called when user selects an option
+    // from auto-complete results, it is okay to use queryLocation itself
+
+    var address = queryLocation;
     // Make sure the address isn't blank.
-    if (address == '') {
+    if (address === '') {
       window.alert('You must enter an area, or address.');
     } else {
         geocodeAndZoom(address);
     }
 }
 
-var yelp_access_token;
+var yelpAccessToken;
 var CORS_ANYWHERE_URL = 'https://cors-anywhere.herokuapp.com/';
 
 // function to get access_token from Yelp Fusion API
 function getYelpAccessToken(){
     // HACK to use client side JS with Yelp V3
     // https://github.com/Rob--W/cors-anywhere
-    var yelp_auth_url = CORS_ANYWHERE_URL + "https://api.yelp.com/oauth2/token";
+    var yelpAuthUrl = CORS_ANYWHERE_URL + "https://api.yelp.com/oauth2/token";
     return $.ajax({
-        url: yelp_auth_url,
+        url: yelpAuthUrl,
         method: "POST",
         data: {
             grant_type: 'client_credentials',
             client_id: 'FN__lFwA6r2MtH9jdbVnQA',
             client_secret: 'nJV84pTy5CxUprC1H6ArVYylEG5NQ1QL75laX3GkVtbvERL1gryeqnINnAD2zCi8'
         },
-    })   
+    });   
 }
 
 // function to get results from Yelp based on search string
 function getYelpBusinesses(access_token, location, searchString){
     // use CORS_ANYWHERE hack for Yelp V3
-    var yelp_business_search_url = CORS_ANYWHERE_URL + "https://api.yelp.com/v3/businesses/search";
+    var yelpBusinessSearchUrl = CORS_ANYWHERE_URL + "https://api.yelp.com/v3/businesses/search";
     $.ajax({
-        url: yelp_business_search_url,
+        url: yelpBusinessSearchUrl,
         method: "GET",
         beforeSend: function(xhr){
             xhr.setRequestHeader("Authorization", "Bearer " + access_token);
@@ -136,9 +143,9 @@ function getYelpBusinesses(access_token, location, searchString){
         }
     }).done(function(response){
         // console.log(response);
-        // set map_center
+        // set mapCenter
         var region = response.region;
-        map_center = new google.maps.LatLng(region.center.latitude, region.center.longitude);
+        mapCenter = new google.maps.LatLng(region.center.latitude, region.center.longitude);
         // populate the businesses from response
         response.businesses.forEach(function(business, index){
             // store distance in miles
@@ -152,12 +159,12 @@ function getYelpBusinesses(access_token, location, searchString){
             }
             // push business into ViewModel's observable array
             appViewModel.yelpBusinesses.push(business);
-        })
+        });
         createMarkers(appViewModel.yelpBusinesses);
     }).fail(function(error){
         // handle error on AJAX request
         alert("An error occured in getting Yelp results! Please try again.");
-    })
+    });
 }
 
 // function to remove all markers from map
@@ -181,16 +188,17 @@ function createMarkers(businesses){
             title: title,
             id: businesses()[i].id,
             icon: defaultIcon
-        })
+        });
         marker.setMap(map);
         // push marker into global markers array
         markers.push(marker);
         // add listener for click to open infoWindow
         marker.addListener('click',(function(marker){
             return function(){
+                map.panTo(marker.getPosition());
                 populateInfoWindow(marker, globalInfoWindow);
-            }            
-        })(marker))
+            };            
+        })(marker));
         // Two event listeners - one for mouseover, one for mouseout,
         // to change the colors back and forth.
         marker.addListener('mouseover', function() {
@@ -210,9 +218,9 @@ function getBusinessInfo(id){
         url: yelp_business_info_url,
         method: "GET",
         beforeSend: function(xhr){
-            xhr.setRequestHeader("Authorization", "Bearer " + yelp_access_token);
+            xhr.setRequestHeader("Authorization", "Bearer " + yelpAccessToken);
         }
-    })    
+    });    
 }
 
 // function to populate infowindow DOM
@@ -236,7 +244,7 @@ function populateInfoWindow(marker, infoWindow){
             var address = "";
             response.location.display_address.forEach(function(part){
                 address += part + '<br>';
-            })
+            });
             var categories = "";
             for(var i=0; i < response.categories.length; i++){
                 categories += response.categories[i].title;
@@ -246,8 +254,8 @@ function populateInfoWindow(marker, infoWindow){
             }
             var photos = "";
             response.photos.forEach(function(url){
-                photos += '<img width="100" height="100" style="margin-right: 5px;" src="' + url + '" alt="yelp image">' 
-            })
+                photos += '<img width="100" height="100" style="margin-right: 5px;" src="' + url + '" alt="yelp image">'; 
+            });
             var open_now = (response.hours !== undefined) ? response.hours[0].is_open_now ? "Yes" : "No" : "N/A";
             var infoHtml = 
                 '<div>' +
@@ -259,13 +267,13 @@ function populateInfoWindow(marker, infoWindow){
                   '<p> <b> Category: </b>' + categories + '</p>' +
                   '<p> <b> Recent photos: </b><br>' + photos + '<br><br>' +
                   '<a href="' + response.url + '"> Yelp Page</a><br>' +
-                  '<small class="text-muted"> Data provided by Yelp Fusion API</small>'
-                '</div>'
+                  '<small class="text-muted"> Data provided by Yelp Fusion API</small>' +
+                '</div>';
             infoWindow.setContent(infoHtml);
             infoWindow.open(map, marker); // to make infowindow fit again in map bounds
         }).fail(function(error){
             // handle error on AJAX request
-            alert("An error occured in getting Yelp business API result! Please try again.")
+            alert("An error occured in getting Yelp business API result! Please try again.");
         });
     }
 }
@@ -295,29 +303,29 @@ var ViewModel = function(){
 
     // function to get search results from yelp, bound to "submit" event on form
     self.getSearchResults = function(){
-        if(yelp_access_token === undefined){
+        if(yelpAccessToken === undefined){
             getYelpAccessToken()
             .done(function(response){
-                yelp_access_token = response.access_token;
+                yelpAccessToken = response.access_token;
                 // clear the businesses if already exists
                 self.yelpBusinesses([]);
-                getYelpBusinesses(yelp_access_token, query_location, self.searchString(), self.yelpBusinesses);
+                getYelpBusinesses(yelpAccessToken, queryLocation, self.searchString(), self.yelpBusinesses);
             }).fail(function(error){
                 alert("An error occured in getting Yelp access token! Please try again.");
-            })            
+            });            
         } else{
             // clear the businesses
             self.yelpBusinesses([]);
-            getYelpBusinesses(yelp_access_token, query_location, self.searchString(), self.yelpBusinesses);
+            getYelpBusinesses(yelpAccessToken, queryLocation, self.searchString(), self.yelpBusinesses);
         }
-    }
+    };
 
     // function to uncolor all markers
     self.uncolorAll = function(){
         markers.forEach(function(marker){
             marker.setIcon(defaultIcon);
-        })        
-    }
+        });        
+    };
 
     // function bound to click event on a business
     self.updateInfoWindow = function(){
@@ -329,8 +337,8 @@ var ViewModel = function(){
                 // open info window for this marker
                 populateInfoWindow(marker, globalInfoWindow);
             }
-        })
-    }
+        });
+    };
 
     // filter the results pane if filterText exists
     // use KO computed
@@ -339,24 +347,24 @@ var ViewModel = function(){
         if(!filter){
             // show all markers if filter is empty
             markers.forEach(function(marker){
-                marker.setMap(map);
-            })
+                marker.setVisible(true);
+            });
             return self.yelpBusinesses();
         } else {
             // show only the markers that contain filter text
             markers.forEach(function(marker){
                 if(marker.title.toLowerCase().indexOf(filter) === -1){
-                    marker.setMap(null);
+                    marker.setVisible(false);
                 } else{
-                    marker.setMap(map);
+                    marker.setVisible(true);
                 }
-            })
+            });
             // filter the businesses array
             return ko.utils.arrayFilter(self.yelpBusinesses(), function(business){
                 return business.name.toLowerCase().indexOf(filter) >= 0;
-            })
+            });
         }
-    }, this)
+    }, this);
 
     // sort business results by distance
     self.sortByDistance = function(){
@@ -371,7 +379,7 @@ var ViewModel = function(){
             }
         });
         return true; // for radio button click highlight
-    }
+    };
 
     // sort business results by rating
     self.sortByRating = function(){
@@ -387,11 +395,11 @@ var ViewModel = function(){
             }
         });
         return true; // for radio button click highlight
-    }
+    };
 
     // sort business results by popularity (review count)
     self.sortByReviewCount = function(){
-        self.sortOption("popularity")
+        self.sortOption("popularity");
         // sort by review count descending
         self.yelpBusinesses.sort(function(business1, business2){
             if(business1.review_count < business2.review_count){
@@ -403,8 +411,8 @@ var ViewModel = function(){
             }
         });        
         return true; // for radio button click highlight
-    }
-}
+    };
+};
 
 // create ViewModel and bind to KO
 var appViewModel = new ViewModel();
